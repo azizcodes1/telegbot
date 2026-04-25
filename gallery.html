@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxePrompt Gallery</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --accent: #d4af37;
+            --text: #e0e0e0;
+            --card-bg: #1a1a1a;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .img-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .img-card:hover {
+            transform: scale(1.03);
+            border-color: var(--accent);
+        }
+
+        .img-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .img-info {
+            padding: 10px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .prompt-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            opacity: 0.8;
+        }
+
+        .empty-msg {
+            text-align: center;
+            margin-top: 50px;
+            opacity: 0.5;
+        }
+
+        /* Loading Animation */
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-top: 50px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Luxe Archive</h1>
+        <div class="subtitle">Your Private Visual Collection</div>
+    </header>
+
+    <div id="loader" class="loader"></div>
+    <div id="gallery" class="gallery-grid" style="display: none;"></div>
+    <div id="empty" class="empty-msg" style="display: none;">Your archive is currently empty.<br>Start creating masterpieces.</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // In a real app, you would fetch data from your server using the tg.initData
+        // For this localized Demo, we will simulate the data fetching
+        
+        async function loadGallery() {
+            // Simulated delay for luxury feel
+            await new Promise(r => setTimeout(r, 1500));
+            
+            document.getElementById('loader').style.display = 'none';
+            
+            // Note: Since this is a static HTML, we can't directly read the SQLite DB here.
+            // You should implement an API endpoint (e.g., using FastAPI or Flask) 
+            // that returns JSON from get_user_generations(user_id).
+            
+            const simulatedData = [
+                { url: 'https://image.pollinations.ai/prompt/cyberpunk%20luxury?width=1024', prompt: 'Bespoke Cyberpunk Atelier' },
+                { url: 'https://image.pollinations.ai/prompt/gold%20rolex?width=1024', prompt: 'Golden Chronometer Still Life' }
+            ];
+
+            if (simulatedData.length === 0) {
+                document.getElementById('empty').style.display = 'block';
+            } else {
+                const gallery = document.getElementById('gallery');
+                gallery.style.display = 'grid';
+                
+                simulatedData.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'img-card';
+                    card.innerHTML = `
+                        <img src="${item.url}" alt="Masterpiece">
+                        <div class="img-info">
+                            <div class="prompt-text">${item.prompt}</div>
+                        </div>
+                    `;
+                    gallery.appendChild(card);
+                });
+            }
+        }
+
+        loadGallery();
+    </script>
+</body>
+</html>
