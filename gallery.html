@@ -82,11 +82,41 @@
             overflow: hidden;
             border: 1px solid rgba(212, 175, 55, 0.1);
             transition: transform 0.3s ease;
+            position: relative; /* For absolute positioning of delete button */
         }
 
         .img-card:hover {
             transform: scale(1.03);
             border-color: var(--accent);
+        }
+
+        .btn-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            z-index: 10;
+        }
+
+        .img-card:hover .btn-delete {
+            opacity: 1;
+        }
+
+        .btn-delete:hover {
+            transform: scale(1.1);
+            background: #ff3b30;
         }
 
         .img-card img {
@@ -127,6 +157,7 @@
             font-size: 0.7rem;
             width: 100%;
             transition: all 0.3s ease;
+            margin-bottom: 5px;
         }
 
         .btn-public:hover {
@@ -134,11 +165,23 @@
             color: black;
         }
 
-        .btn-public.is-public {
-            background: rgba(212, 175, 55, 0.2);
-            border-color: transparent;
-            color: var(--text);
-            cursor: default;
+        .btn-private {
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #ccc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+        }
+
+        .btn-private:hover {
+            background: rgba(212, 175, 55, 0.3);
+            color: white;
+            border-color: var(--accent);
         }
 
         .empty-msg {
@@ -239,13 +282,18 @@
                         let actionHtml = '';
                         if (currentTab === 'private') {
                             actionHtml = item.is_public
-                                ? `<button class="btn-public is-public">Published to Public</button>`
+                                ? `<button class="btn-private" onclick="makePrivate(${item.id})">Do Private</button>`
                                 : `<button class="btn-public" onclick="makePublic(${item.id})">Do Public</button>`;
                         } else {
                             actionHtml = `<div class="author">By ${item.full_name || item.username || 'Anonymous'}</div>`;
                         }
 
+                        let deleteHtml = currentTab === 'private' 
+                            ? `<button class="btn-delete" onclick="deleteImage(${item.id})">✕</button>` 
+                            : '';
+
                         card.innerHTML = `
+                            ${deleteHtml}
                             <img src="${item.image_url}" alt="Masterpiece">
                             <div class="img-info">
                                 ${actionHtml}
@@ -277,6 +325,44 @@
                         renderGallery();
                     } catch (e) {
                         tg.showAlert("Failed to publish. Check your connection.");
+                    }
+                }
+            });
+        }
+
+        async function makePrivate(id) {
+            tg.showConfirm("Do you want to hide this from the Global Gallery?", async (ok) => {
+                if (ok) {
+                    try {
+                        await fetch(`${API_BASE_URL}/api/make-private/${id}`, {
+                            method: 'POST',
+                            headers: {
+                                'ngrok-skip-browser-warning': 'true'
+                            }
+                        });
+                        tg.showAlert("Image is now private.");
+                        renderGallery();
+                    } catch (e) {
+                        tg.showAlert("Failed to update status.");
+                    }
+                }
+            });
+        }
+
+        async function deleteImage(id) {
+            tg.showConfirm("Are you sure you want to delete this masterpiece forever?", async (ok) => {
+                if (ok) {
+                    try {
+                        await fetch(`${API_BASE_URL}/api/delete-image/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'ngrok-skip-browser-warning': 'true'
+                            }
+                        });
+                        tg.showAlert("Vision deleted.");
+                        renderGallery();
+                    } catch (e) {
+                        tg.showAlert("Failed to delete.");
                     }
                 }
             });
